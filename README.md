@@ -124,17 +124,19 @@ node apps/web/scripts/structure-check.mjs   # layout metrics (rows, glow, emblem
 ### Frontend → Vercel
 
 1. Push the repo to GitHub and import it in Vercel. The repo-root
-   `vercel.json` already configures the build command (`npm --prefix ../../
-   run build:shared && next build` — the shared package is built before the
-   web app) and the install command (`npm install`, workspaces install at
-   repo root). Do **not** set `framework` in `vercel.json` — explicitly
+   `vercel.json` configures the build command
+   (`npm run build --workspace @academy/shared && npm run build
+   --workspace @academy/web` — workspace-relative, so it works no matter
+   which directory Vercel runs it from, and it builds the shared package
+   explicitly) and the install command (`npm install`, workspaces install
+   at repo root). Do **not** set `framework` in `vercel.json` — explicitly
    pinning `nextjs` makes Vercel run the Next builder at the repo root,
-   where it fails with "No Next.js version detected".
-2. Vercel auto-detects the Next app for the standard `apps/*` layout and
-   uses `apps/web` as the Root Directory with no extra settings. If a build
-   ever shows "No Next.js version detected", set **Project Settings →
-   General → Root Directory:** `apps/web` (a dashboard field — it is *not*
-   a `vercel.json` key).
+   where it fails with "No Next.js version detected". `rootDirectory` is
+   not a `vercel.json` key either (Vercel rejects it).
+2. Make sure the project's **Root Directory** points at the Next app:
+   auto-detection usually finds it for the standard `apps/*` layout, but if
+   a build ever says "No Next.js version detected", set **Project Settings
+   → General → Root Directory:** `apps/web` (a dashboard field).
 3. Add env vars: `NEXT_PUBLIC_ACADEMY_NAME`, `NEXT_PUBLIC_TAGLINE`, and
    `NEXT_PUBLIC_API_URL` **only if** you also host the API. Without an API the
    dashboard runs fully on bundled mock data (status chip shows "Local · Mock").

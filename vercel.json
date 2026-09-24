@@ -1,4 +1,4 @@
 {
-  "buildCommand": "npm --prefix ../../ run build:shared && next build",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "buildCommand": "npm run build --workspace @academy/shared && npm run build --workspace @academy/web"
 }
