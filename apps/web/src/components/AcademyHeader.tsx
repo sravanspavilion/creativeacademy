@@ -30,10 +30,16 @@ export function AcademyHeader({ now, source }: { now: Date; source: DataSource }
 
       <div className="flex flex-col items-end gap-2">
         <div className="text-right">
-          <p className="font-display text-sm font-bold uppercase tracking-[0.22em] text-white sm:text-base lg:text-lg">
+          <p
+            suppressHydrationWarning
+            className="font-display text-sm font-bold uppercase tracking-[0.22em] text-white sm:text-base lg:text-lg"
+          >
             {formatDayName(now)}
           </p>
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/60 sm:text-xs">
+          <p
+            suppressHydrationWarning
+            className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/60 sm:text-xs"
+          >
             {formatDateLabel(now)}
           </p>
         </div>

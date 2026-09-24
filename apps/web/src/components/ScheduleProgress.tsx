@@ -7,7 +7,7 @@ export function ScheduleProgress({ progress, shift }: { progress: number; shift:
     <div className="w-full max-w-md">
       <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.26em] text-white/55">
         <span>Session Progress</span>
-        <span className="tabular-nums">{pct}%</span>
+        <span suppressHydrationWarning className="tabular-nums">{pct}%</span>
       </div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
