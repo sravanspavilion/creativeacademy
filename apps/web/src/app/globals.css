@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #06040f;
+  --color-foreground: #f4f1ff;
+  --color-accent-purple: #a855f7;
+  --color-accent-pink: #ec4899;
+  --color-accent-orange: #f97316;
+  --color-accent-amber: #f59e0b;
+  --color-accent-blue: #60a5fa;
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-space-grotesk), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+  background: #06040f;
+  color: #f4f1ff;
+}
+
+body {
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* ---------- Glass panel ---------- */
+.glass-panel {
+  background: linear-gradient(155deg, rgba(28, 22, 60, 0.5), rgba(10, 8, 26, 0.72));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Readable hero text ---------- */
+.text-glow {
+  text-shadow:
+    0 0 42px rgba(255, 255, 255, 0.2),
+    0 0 96px rgba(168, 85, 247, 0.35);
+}
+
+/* ---------- Floating emblems ---------- */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotateX(var(--tilt-x, 8deg)) rotateY(var(--tilt-y, -10deg))
+      rotate(var(--spin, 0deg));
+  }
+  50% {
+    transform: translate3d(0, -16px, 0) rotateX(var(--tilt-x, 8deg)) rotateY(var(--tilt-y, -10deg))
+      rotate(calc(var(--spin, 0deg) + 3deg));
+  }
+}
+
+.emblem-float {
+  position: absolute;
+  will-change: transform;
+  animation: float-slow 11s ease-in-out infinite;
+  filter: drop-shadow(0 20px 26px rgba(0, 0, 0, 0.5));
+}
+
+/* ---------- Background orbs ---------- */
+@keyframes orb-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, -4%, 0) scale(1.12);
+  }
+}
+
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  will-change: transform;
+  animation: orb-drift 26s ease-in-out infinite;
+}
+
+/* ---------- Status pulse ---------- */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.status-dot {
+  animation: pulse-glow 2.4s ease-in-out infinite;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+}
