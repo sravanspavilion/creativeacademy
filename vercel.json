@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "rootDirectory": "apps/web",
+  "buildCommand": "npm --prefix ../../ run build:shared && next build",
+  "installCommand": "npm install"
+}
