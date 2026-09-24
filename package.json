@@ -1,0 +1,23 @@
+{
+  "name": "creative-academy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Creative Academy Batch Controller — live digital schedule display (Next.js) + management API (NestJS).",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "npm run build:shared",
+    "dev": "npm run dev --workspace @academy/web",
+    "dev:web": "npm run dev --workspace @academy/web",
+    "dev:api": "npm run start:dev --workspace @academy/api",
+    "build": "npm run build:shared && npm run build:web && npm run build:api",
+    "build:shared": "npm run build --workspace @academy/shared",
+    "build:web": "npm run build --workspace @academy/web",
+    "build:api": "npm run build --workspace @academy/api",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
