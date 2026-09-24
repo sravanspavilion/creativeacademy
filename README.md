@@ -123,12 +123,14 @@ node apps/web/scripts/structure-check.mjs   # layout metrics (rows, glow, emblem
 
 ### Frontend → Vercel
 
-1. Push the repo to GitHub and import it in Vercel.
-2. Project settings:
-   - **Root Directory:** `apps/web`
-   - **Build Command:** `npm --prefix ../../ run build:shared && next build`
-     (the shared package is built before the web app)
-   - **Install Command:** `npm install` (workspaces install at repo root)
+1. Push the repo to GitHub and import it in Vercel. The repo-root
+   `vercel.json` already configures the framework (`nextjs`), the build
+   command (`npm --prefix ../../ run build:shared && next build` — the shared
+   package is built before the web app) and the install command (`npm
+   install`, workspaces install at repo root).
+2. Project settings → General: **Root Directory:** `apps/web` (this one is a
+   dashboard setting — it is *not* a `vercel.json` key; Vercel auto-detects
+   it for the common `apps/*` layout).
 3. Add env vars: `NEXT_PUBLIC_ACADEMY_NAME`, `NEXT_PUBLIC_TAGLINE`, and
    `NEXT_PUBLIC_API_URL` **only if** you also host the API. Without an API the
    dashboard runs fully on bundled mock data (status chip shows "Local · Mock").
