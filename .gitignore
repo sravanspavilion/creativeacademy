@@ -8,6 +8,13 @@ out/
 build/
 *.tsbuildinfo
 
+# Next.js
+.next/
+next-env.d.ts
+
+# Platform
+.vercel
+
 # Environment
 .env
 .env.local

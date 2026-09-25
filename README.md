@@ -1,18 +1,23 @@
 # Creative AI Academy — Batch Controller & Digital Schedule Display
 
-A professional, responsive **live digital signage dashboard** for a creative academy
-(Adobe editing tools + AI creative workflows) plus a **management REST API**.
+A professional, responsive **live digital signage dashboard** for a creative
+academy (Adobe editing tools + AI creative workflows) plus a **built-in
+management API** — everything is a single Next.js application.
 
 - **Web** — Next.js 16 (App Router, TypeScript, Tailwind CSS 4), no WebGL: all
   effects are performant CSS + inline SVG.
-- **API** — NestJS 12, REST, class-validator DTOs, repository-pattern data access.
-- **Shared** — `@academy/shared`: pure schedule-evaluation + formatting logic and
-  the sample data used by both apps (tested once, never duplicated).
+- **API** — Next.js route handlers under `/api/*` (no separate service to
+  deploy): REST endpoints, ISO-8601 query validation, repository-pattern data
+  access, CORS support for cross-origin clients.
+- **Shared** — `@academy/shared` workspace package: pure schedule-evaluation +
+  formatting logic and the sample data used by both the dashboard and the API
+  (tested once, never duplicated).
 
 ```
-apps/web        Next.js dashboard (live display)
-apps/api        NestJS REST API (/api/*)
-packages/shared Types, evaluateSchedule(), formatters, mock seed data
+src/app/           Next.js App Router (dashboard + /api route handlers)
+src/components/    Dashboard UI components
+src/lib/api/       Repository + services behind the API routes
+packages/shared/   Types, evaluateSchedule(), formatters, mock seed data
 ```
 
 ## What it does
@@ -38,29 +43,24 @@ packages/shared Types, evaluateSchedule(), formatters, mock seed data
 ## Quick start
 
 ```bash
-npm install          # installs all workspaces + builds @academy/shared (postinstall)
-
-# Frontend only (mock data — no API needed)
-npm run dev:web      # http://localhost:3000
-
-# Frontend + API
-npm run dev:api      # http://localhost:3001/api/health
-npm run dev:web      # http://localhost:3000
+npm install          # installs everything + builds @academy/shared (postinstall)
+npm run dev          # http://localhost:3000 (dashboard + /api in one server)
 ```
 
-Create `apps/web/.env.local` to point the dashboard at the API:
+The dashboard talks to the API on its own origin (`/api/*`) by default — no
+second server, no CORS. It falls back to bundled mock data automatically when
+the API is disabled or unreachable; the status chip in the top-right shows
+**Live · API** vs **Local · Mock**.
+
+Optional `.env.local` (see `.env.example`):
 
 ```env
-# apps/web/.env.local
 NEXT_PUBLIC_ACADEMY_NAME=CREATIVE AI ACADEMY
 NEXT_PUBLIC_TAGLINE=EDITING • DESIGN • AI
-NEXT_PUBLIC_CLOCK_FORMAT=12                 # "12" or "24"
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
+NEXT_PUBLIC_CLOCK_FORMAT=12            # "12" or "24"
+NEXT_PUBLIC_API_URL=/api              # "" → mock only; a full URL → remote API
+CORS_ORIGINS=*                        # cross-origin clients (default: allow all)
 ```
-
-The dashboard falls back to bundled mock data automatically when the API is
-unreachable (or the env var is unset) — the status chip in the top-right shows
-**Live · API** vs **Local · Mock**.
 
 ### Preview every schedule state without waiting
 
@@ -70,23 +70,24 @@ Append `?at=HH:MM` (device-local 24h) to preview a frozen moment:
 
 ## Configuration
 
-| Variable | App | Default | Purpose |
-| --- | --- | --- | --- |
-| `NEXT_PUBLIC_ACADEMY_NAME` | web | `CREATIVE AI ACADEMY` | Academy name (top-left) |
-| `NEXT_PUBLIC_TAGLINE` | web | `EDITING • DESIGN • AI` | Subtitle |
-| `NEXT_PUBLIC_ACADEMY_HOURS` | web | `9:00 AM — 6:00 PM` | Footer hours label |
-| `NEXT_PUBLIC_CLOCK_FORMAT` | web | `12` | `12` or `24` |
-| `NEXT_PUBLIC_API_URL` | web | *(unset)* | API base, e.g. `http://localhost:3001/api` |
-| `API_PORT` | api | `3001` | API port |
-| `CORS_ORIGINS` | api | `http://localhost:3000` | Comma-separated allowed origins |
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_ACADEMY_NAME` | `CREATIVE AI ACADEMY` | Academy name (top-left) |
+| `NEXT_PUBLIC_TAGLINE` | `EDITING • DESIGN • AI` | Subtitle |
+| `NEXT_PUBLIC_ACADEMY_HOURS` | `9:00 AM — 6:00 PM` | Footer hours label |
+| `NEXT_PUBLIC_CLOCK_FORMAT` | `12` | `12` or `24` |
+| `NEXT_PUBLIC_API_URL` | `/api` | API base (`""` = mock only) |
+| `CORS_ORIGINS` | `*` | Comma-separated allowed origins for cross-origin API clients |
 
 Sample schedule/course data lives in **one place**:
 `packages/shared/src/data/mock.ts` (used by both the dashboard fallback and the
 API's in-memory repository). Swap it for Prisma/PostgreSQL data by implementing
-the `AcademyRepository` interface in `apps/api/src/data/in-memory-repository.ts`
-— controllers/services are unchanged.
+the `AcademyRepository` interface in `src/lib/api/repository.ts` — route
+handlers and services are unchanged.
 
 ## API endpoints
+
+Built into the app (route handlers) — no separate server to deploy.
 
 | Endpoint | Description |
 | --- | --- |
@@ -96,62 +97,58 @@ the `AcademyRepository` interface in `apps/api/src/data/in-memory-repository.ts`
 | `GET /api/schedules/active?at=<ISO-8601>` | Shift evaluation at an instant (default: now) — returns `{ state, activeShift, nextShift, remainingSec, progress, untilStartSec }` |
 | `GET /api/courses` | Course catalogue |
 
-Business logic lives in services; DTOs are validated with `class-validator`
-(invalid `?at` → `400`).
+`?at=` must be an ISO-8601 timestamp (rigorous validation, matching the strict
+`class-validator` check the NestJS API used before) — invalid input → `400`.
+
+Business logic lives in `src/lib/api/services.ts` classes, which remain
+repository-driven and framework-agnostic (swap the repository for
+Prisma/PostgreSQL later without touching routes).
 
 ## Testing & quality gates
 
 ```bash
-npm test          # shared (26) + api (6)  → boundary matrix + formatters + services
-npm run lint      # eslint (web + api)
-npm run typecheck # tsc --noEmit (web + api)
-npm run build     # shared → web → api production builds
+npm test          # shared (26) + API services & route handlers (~13)
+npm run lint      # eslint (app + route handlers)
+npm run typecheck # tsc --noEmit
+npm run build     # builds @academy/shared, then the Next.js production build
 ```
 
 The shared suite verifies every `§15` boundary scenario (08:59:59, 09:00:00,
 10:30:00, 11:59:59, 12:00:00, 14:59:59, 15:00:00, 17:59:59, 18:00:00, 20:00:00)
-plus disabled-shift/gap and custom-schedule cases with an injected clock.
+plus disabled-shift/gap and custom-schedule cases with an injected clock. The
+API suite exercises the services and the route handlers (status codes, JSON
+shapes, validation errors, CORS headers).
 
-Headless browser QA (uses system Chrome — run the dev server first):
-
-```bash
-node apps/web/scripts/visual-check.mjs      # 35 state×viewport combos + live tick test
-node apps/web/scripts/structure-check.mjs   # layout metrics (rows, glow, emblem hiding)
-```
-
-## Deployment
-
-### Frontend → Vercel
-
-1. Push the repo to GitHub and import it in Vercel. The repo-root
-   `vercel.json` configures the build command
-   (`npm run build --workspace @academy/shared && npm run build
-   --workspace @academy/web` — workspace-relative, so it works no matter
-   which directory Vercel runs it from, and it builds the shared package
-   explicitly) and the install command (`npm install`, workspaces install
-   at repo root). Do **not** set `framework` in `vercel.json` — explicitly
-   pinning `nextjs` makes Vercel run the Next builder at the repo root,
-   where it fails with "No Next.js version detected". `rootDirectory` is
-   not a `vercel.json` key either (Vercel rejects it).
-2. Make sure the project's **Root Directory** points at the Next app:
-   auto-detection usually finds it for the standard `apps/*` layout, but if
-   a build ever says "No Next.js version detected", set **Project Settings
-   → General → Root Directory:** `apps/web` (a dashboard field).
-3. Add env vars: `NEXT_PUBLIC_ACADEMY_NAME`, `NEXT_PUBLIC_TAGLINE`, and
-   `NEXT_PUBLIC_API_URL` **only if** you also host the API. Without an API the
-   dashboard runs fully on bundled mock data (status chip shows "Local · Mock").
-
-### API → Railway / Render / VPS
+Headless browser QA (uses system Chrome — run `npm run dev` first):
 
 ```bash
-cd apps/api
-npm ci
-npm run build           # dist/ via nest build
-node dist/main.js       # set PORT/API_PORT + CORS_ORIGINS in the platform UI
+node scripts/visual-check.mjs      # 35 state×viewport combos + live tick test
+node scripts/structure-check.mjs   # layout metrics (rows, glow, emblem hiding)
 ```
 
-A future option: `nest start` serverless via Vercel Functions, but a small
-Node service (Railway/Render/Fly) is the recommended fit.
+## Deployment → Vercel
+
+The repo root **is** the Next.js app, so Vercel auto-detects the framework and
+finds the production build — no Root Directory, `rootDirectory`, or framework
+pinning needed. `vercel.json` just makes the build explicit:
+
+```json
+{
+  "installCommand": "npm install",
+  "buildCommand": "npm run build"
+}
+```
+
+`npm run build` compiles `@academy/shared` first (the postinstall also builds
+it on fresh installs, so cached installs can't miss it), then runs `next build`.
+
+1. Push the repo and import it in Vercel. The dashboard **and** the API deploy
+   together — `/api/*` works on the same origin as the dashboard.
+2. Optionally set env vars in the project: `NEXT_PUBLIC_ACADEMY_NAME`,
+   `NEXT_PUBLIC_TAGLINE`, `NEXT_PUBLIC_CLOCK_FORMAT`, and `CORS_ORIGINS` (only
+   needed when external origins consume the API).
+3. Done — no second deployment for the API; the status chip will read
+   "Live · API".
 
 ## Notes & design decisions
 
@@ -171,10 +168,10 @@ Node service (Railway/Render/Fly) is the recommended fit.
 ## Limitations / next steps
 
 - No admin UI yet — the architecture is prepared for it (schedule/course/academy
-  API modules + repository swap). Editing academy name, shift times and courses
+  modules + repository swap). Editing academy name, shift times and courses
   through a dashboard is the natural next milestone.
 - No persistence — data is in-memory (mock). Prisma/PostgreSQL can replace
-  `InMemoryAcademyRepository` without touching services or controllers.
+  `InMemoryAcademyRepository` without touching services or route handlers.
 - The active-shift decision is made client-side from the device clock; the API's
   `/schedules/active` is equivalent logic for server-side checks (a future admin
   could push overrides).

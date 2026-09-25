@@ -1,4 +1,4 @@
 {
   "installCommand": "npm install",
-  "buildCommand": "npm run build --workspace @academy/shared && npm run build --workspace @academy/web"
+  "buildCommand": "npm run build"
 }

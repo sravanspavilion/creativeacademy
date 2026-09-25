@@ -1,7 +1,7 @@
 /**
  * Shared domain types for the Creative Academy Batch Controller.
- * These types are used by both the Next.js dashboard and the NestJS API,
- * and are designed to map 1:1 onto a future Prisma/PostgreSQL schema.
+ * These types are used by the Next.js dashboard and its built-in API route
+ * handlers, and are designed to map 1:1 onto a future Prisma/PostgreSQL schema.
  */
 
 /** A course taught at the academy (Adobe tools, AI tools, motion, etc). */

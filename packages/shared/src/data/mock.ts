@@ -2,7 +2,7 @@ import type { AcademyInfo, Course } from "../types";
 
 /**
  * Single source of truth for sample schedule data.
- * Consumed by the dashboard (mock fallback) and by the NestJS API's
+ * Consumed by the dashboard (mock fallback) and by the built-in API's
  * in-memory repository, so replacing it later with Prisma/PostgreSQL data
  * happens in exactly one place.
  */
